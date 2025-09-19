@@ -35,6 +35,7 @@
             position: relative;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.5);
+            z-index: 10;
         }
         
         .game-container::before {
@@ -48,7 +49,7 @@
             z-index: -1;
         }
         
-        /* 배경 이미지 설정 - 투명도를 30%로 증가 */
+        /* 배경 이미지 설정 - 투명도를 80%로 설정 */
         .background-image {
             position: absolute;
             top: 0;
@@ -58,9 +59,9 @@
             background-image: url('logo.png');
             background-size: cover;
             background-position: center;
-            opacity: 0.3; /* 30% 투명도로 변경 (기존 10%에서 30%로 증가) */
+            opacity: 0.8; /* 80% 투명도 */
             z-index: -2;
-            filter: brightness(1.2); /* 약간 밝게 조정 */
+            filter: brightness(1.2);
         }
         
         h1 {
@@ -70,6 +71,8 @@
             font-weight: 700;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             letter-spacing: 1px;
+            position: relative;
+            z-index: 5;
         }
         
         .subtitle {
@@ -78,6 +81,8 @@
             margin-bottom: 20px;
             font-weight: 700;
             line-height: 1.4;
+            position: relative;
+            z-index: 5;
         }
         
         .safety-badge {
@@ -91,6 +96,8 @@
             box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
             animation: pulse 2s infinite;
             max-width: 90%;
+            position: relative;
+            z-index: 5;
         }
         
         @keyframes pulse {
@@ -110,6 +117,8 @@
             gap: 15px;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
             animation: pulse 2s infinite;
+            position: relative;
+            z-index: 5;
         }
         
         .puzzle-grid {
@@ -122,6 +131,8 @@
             margin: 25px auto;
             box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
             border: 2px solid #e9ecef;
+            position: relative;
+            z-index: 5;
         }
         
         .puzzle-piece {
@@ -137,6 +148,7 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             position: relative;
             overflow: hidden;
+            z-index: 5;
         }
         
         .puzzle-piece::before {
@@ -184,6 +196,7 @@
             letter-spacing: 0.5px;
             position: relative;
             overflow: hidden;
+            z-index: 15;
         }
         
         button::before {
@@ -222,6 +235,8 @@
             font-size: 70px;
             margin: 25px 0;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 5;
         }
         
         .message {
@@ -229,6 +244,8 @@
             font-weight: 700;
             margin: 25px 0;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 5;
         }
         
         .green { 
@@ -248,6 +265,8 @@
             font-size: 15px;
             color: #6c757d;
             font-weight: 500;
+            position: relative;
+            z-index: 5;
         }
         
         .powered-by {
@@ -261,10 +280,12 @@
             box-shadow: 0 3px 10px rgba(248, 151, 29, 0.3);
             display: inline-block;
             letter-spacing: 0.5px;
+            position: relative;
+            z-index: 5;
         }
         
         .hidden {
-            display: none;
+            display: none !important;
         }
         
         /* 반응형 디자인 */
@@ -430,7 +451,10 @@
                 pieceElement.style.backgroundSize = '400% 400%'; // 4x4 = 16등분
                 pieceElement.style.backgroundPosition = `${col * 33.33}% ${row * 33.33%}`;
                 
-                pieceElement.addEventListener('click', () => selectPiece(pieceElement, piece));
+                pieceElement.addEventListener('click', function() {
+                    selectPiece(this, piece);
+                });
+                
                 puzzleGrid.appendChild(pieceElement);
             });
         }
@@ -528,11 +552,13 @@
 
         // 화면 표시 함수
         function showScreen(screen) {
+            // 모든 화면 숨기기
             startScreen.classList.add('hidden');
             gameScreen.classList.add('hidden');
             winScreen.classList.add('hidden');
             loseScreen.classList.add('hidden');
             
+            // 요청된 화면 표시
             if (screen === 'start') {
                 startScreen.classList.remove('hidden');
             } else if (screen === 'game') {
@@ -553,13 +579,18 @@
         }
 
         // 이벤트 리스너 등록
-        startButton.addEventListener('click', startGame);
-        swapButton.addEventListener('click', swapPieces);
-        playAgainButton.addEventListener('click', startGame);
-        tryAgainButton.addEventListener('click', startGame);
+        document.addEventListener('DOMContentLoaded', function() {
+            // 버튼에 이벤트 리스너 추가
+            startButton.addEventListener('click', startGame);
+            swapButton.addEventListener('click', swapPieces);
+            playAgainButton.addEventListener('click', startGame);
+            tryAgainButton.addEventListener('click', startGame);
+        });
 
         // 초기 화면 표시
-        showScreen('start');
+        window.addEventListener('load', function() {
+            showScreen('start');
+        });
     </script>
 </body>
 </html>
