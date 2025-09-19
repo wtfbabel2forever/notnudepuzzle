@@ -4,68 +4,223 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pariway Puzzle Game</title>
-</head>
-<body style="font-family: Arial, sans-serif; background: linear-gradient(135deg, #ff9a9e, #fecfef, #a18cd1); margin: 0; padding: 20px; min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-    
-    <div id="game-container" style="background: white; border-radius: 20px; padding: 30px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; overflow: hidden;">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e, #fecfef, #a18cd1);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         
-        <!-- Background image -->
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 20px; z-index: 0;">
-            <img src="logo.png" alt="Background" style="width: 100%; height: 100%; opacity: 0.8; object-fit: cover; border-radius: 20px;" onerror="this.style.display='none'">
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(45deg, #f8971d, #f54e80); opacity: 0.3; z-index: 0; border-radius: 20px;"></div>
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Background with fallback */
+        .background-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            z-index: 0;
+        }
+        
+        #background-image {
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+        
+        /* Fallback background if image fails to load */
+        .fallback-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #f8971d, #f54e80);
+            opacity: 0.3;
+            z-index: 0;
+            border-radius: 20px;
+        }
+        
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            color: #d63384;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        
+        .safety-badge {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 15px 0;
+            display: inline-block;
+        }
+        
+        .emoji {
+            font-size: 40px;
+            margin: 20px 0;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        button {
+            background: #d63384;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 15px 5px;
+            box-shadow: 0 3px 10px rgba(214, 51, 132, 0.3);
+            width: 80%;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            background: #e63946;
+            transform: translateY(-2px);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .powered-by {
+            background: #f8971d;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 12px;
+            margin: 30px auto 10px;
+            display: inline-block;
+        }
+        
+        .puzzle-grid {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            min-height: 200px;
+        }
+        
+        .puzzle-piece {
+            background: #ddd;
+            height: 60px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px 0;
+            transition: all 0.1s ease;
+        }
+        
+        .puzzle-piece.selected {
+            background: #d63384;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(214, 51, 132, 0.5);
+        }
+        
+        /* Position SWAP button closer to powered-by */
+        #swap-button {
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Background image with fallback -->
+        <div class="background-container">
+            <img id="background-image" src="logo.png" alt="Background" onerror="this.style.display='none'">
+            <div class="fallback-background"></div>
         </div>
         
-        <div style="position: relative; z-index: 1;">
+        <div class="content">
             <!-- Start Screen -->
             <div id="start-screen">
-                <div style="background: #28a745; color: white; padding: 10px; border-radius: 20px; font-weight: bold; margin: 15px 0; display: inline-block;">
+                <div class="safety-badge">
                     ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
                 </div>
-                <div style="font-size: 40px; margin: 20px 0;">🧩</div>
-                <h1 style="color: #d63384; font-size: 24px; margin: 20px 0;">Pariway Puzzle Game</h1>
-                <p style="font-size: 18px; margin: 15px 0; font-weight: bold;">FIX IT!<br>60 SECONDS!</p>
-                <button onclick="startGame()" style="background: #d63384; color: white; border: none; padding: 15px 25px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; margin: 15px 5px; box-shadow: 0 3px 10px rgba(214, 51, 132, 0.3); width: 80%; margin-top: 20px;">✨ START GAME! ✨</button>
+                <div class="emoji">🧩</div>
+                <h1>Pariway Puzzle Game</h1>
+                <p class="subtitle">FIX IT!<br>60 SECONDS!</p>
+                <button onclick="startGame()">✨ START GAME! ✨</button>
             </div>
 
             <!-- Game Screen -->
-            <div id="game-screen" style="display: none;">
-                <div style="background: #28a745; color: white; padding: 10px; border-radius: 20px; font-weight: bold; margin: 15px 0; display: inline-block;">
+            <div id="game-screen" class="hidden">
+                <div class="safety-badge">
                     ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
                 </div>
                 <div style="font-size: 30px; font-weight: bold; color: #e63946; margin: 20px 0;">
                     ⏱️ <span id="time-display">1:00</span>
                 </div>
-                <div style="background: #f0f0f0; padding: 15px; border-radius: 10px; margin: 20px 0; min-height: 200px;">
+                <div class="puzzle-grid" id="puzzle-grid">
                     <div id="puzzle-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 15px;">
                         <!-- Puzzle pieces will be generated by JavaScript -->
                     </div>
                 </div>
-                <button id="swap-button" onclick="swapPieces()" disabled style="background: #d63384; color: white; border: none; padding: 15px 25px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; margin: 15px 5px; box-shadow: 0 3px 10px rgba(214, 51, 132, 0.3); width: 80%; margin-top: 40px; margin-bottom: 20px;">🔄 SWAP</button>
+                <!-- SWAP button positioned closer to powered-by -->
+                <button id="swap-button" onclick="swapPieces()" disabled>🔄 SWAP</button>
             </div>
 
             <!-- Win Screen -->
-            <div id="win-screen" style="display: none;">
-                <div style="background: #28a745; color: white; padding: 10px; border-radius: 20px; font-weight: bold; margin: 15px 0; display: inline-block;">
+            <div id="win-screen" class="hidden">
+                <div class="safety-badge">
                     ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
                 </div>
-                <div style="font-size: 40px; margin: 20px 0;">🎉</div>
+                <div class="emoji">🎉</div>
                 <h1 style="color: #2a9d8f; font-size: 22px; font-weight: bold; margin: 20px 0;">YOU WIN!</h1>
-                <p style="font-size: 18px; margin: 15px 0; font-weight: bold;">STYLE MASTER! 🏆</p>
-                <button onclick="resetGame()" style="background: #d63384; color: white; border: none; padding: 15px 25px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; margin: 15px 5px; box-shadow: 0 3px 10px rgba(214, 51, 132, 0.3); width: 80%; margin-top: 20px;">🌟 PLAY AGAIN</button>
+                <p class="subtitle">STYLE MASTER! 🏆</p>
+                <button onclick="resetGame()">🌟 PLAY AGAIN</button>
             </div>
 
             <!-- Lose Screen -->
-            <div id="lose-screen" style="display: none;">
-                <div style="background: #28a745; color: white; padding: 10px; border-radius: 20px; font-weight: bold; margin: 15px 0; display: inline-block;">
+            <div id="lose-screen" class="hidden">
+                <div class="safety-badge">
                     ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
                 </div>
-                <div style="font-size: 40px; margin: 20px 0;">⏰</div>
+                <div class="emoji">⏰</div>
                 <h1 style="color: #e63946; font-size: 22px; font-weight: bold; margin: 20px 0;">TIME'S UP!</h1>
-                <p style="font-size: 18px; margin: 15px 0; font-weight: bold;">TRY AGAIN! 💪</p>
-                <button onclick="resetGame()" style="background: #d63384; color: white; border: none; padding: 15px 25px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; margin: 15px 5px; box-shadow: 0 3px 10px rgba(214, 51, 132, 0.3); width: 80%; margin-top: 20px;">🔥 TRY AGAIN</button>
+                <p class="subtitle">TRY AGAIN! 💪</p>
+                <button onclick="resetGame()">🔥 TRY AGAIN</button>
             </div>
 
-            <div style="background: #f8971d; color: white; padding: 8px 15px; border-radius: 15px; font-weight: bold; font-size: 12px; margin: 30px auto 10px; display: inline-block;">Powered by AI Blonde Studio</div>
+            <div class="powered-by">Powered by AI Blonde Studio</div>
         </div>
     </div>
 
@@ -90,8 +245,8 @@
         // Start game function
         function startGame() {
             gameState = 'playing';
-            startScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
             
             // Generate random image index (1-10)
             currentImageIndex = Math.floor(Math.random() * 10) + 1;
@@ -117,20 +272,12 @@
         // Create puzzle pieces (8 pieces in 2x4 grid)
         function createPuzzlePieces() {
             puzzleContainer.innerHTML = '';
+            pieces = [];
             
             // Create 8 pieces
             for (let i = 0; i < 8; i++) {
                 const piece = document.createElement('div');
-                piece.style.background = '#ddd';
-                piece.style.height = '60px';
-                piece.style.borderRadius = '5px';
-                piece.style.cursor = 'pointer';
-                piece.style.display = 'flex';
-                piece.style.alignItems = 'center';
-                piece.style.justifyContent = 'center';
-                piece.style.margin = '2px 0';
-                piece.style.transition = 'all 0.1s ease';
-                
+                piece.className = 'puzzle-piece';
                 piece.dataset.index = i;
                 piece.dataset.correctPosition = i;
                 
@@ -142,6 +289,7 @@
                 piece.style.backgroundImage = `url(photo${currentImageIndex}.png)`;
                 piece.style.backgroundSize = '400% 200%';
                 piece.style.backgroundPosition = `${col * 33.33}% ${row * 100}%`;
+                piece.style.backgroundColor = '#ddd';
                 
                 // Add click handler
                 piece.onclick = function() {
@@ -208,20 +356,16 @@
             
             // Reset all pieces
             for (let i = 0; i < pieces.length; i++) {
-                pieces[i].style.background = '#ddd';
-                pieces[i].style.color = 'black';
-                pieces[i].style.transform = 'scale(1)';
+                pieces[i].classList.remove('selected');
             }
             
             // Highlight selected piece
-            pieces[index].style.background = '#d63384';
-            pieces[index].style.color = 'white';
-            pieces[index].style.transform = 'scale(1.05)';
+            pieces[index].classList.add('selected');
             selectedPieceIndex = index;
             swapButton.disabled = false;
         }
 
-        // Swap pieces function
+        // Swap pieces function - FIXED TO WORK MULTIPLE TIMES
         function swapPieces() {
             if (selectedPieceIndex === -1 || gameState !== 'playing') return;
             
@@ -270,15 +414,15 @@
         // Show win screen
         function showWinScreen() {
             gameState = 'won';
-            gameScreen.style.display = 'none';
-            winScreen.style.display = 'block';
+            gameScreen.classList.add('hidden');
+            winScreen.classList.remove('hidden');
         }
 
         // Show lose screen
         function showLoseScreen() {
             gameState = 'lost';
-            gameScreen.style.display = 'none';
-            loseScreen.style.display = 'block';
+            gameScreen.classList.add('hidden');
+            loseScreen.classList.remove('hidden');
         }
 
         // Reset game
@@ -286,9 +430,9 @@
             gameState = 'start';
             selectedPieceIndex = -1;
             
-            winScreen.style.display = 'none';
-            loseScreen.style.display = 'none';
-            startScreen.style.display = 'block';
+            winScreen.classList.add('hidden');
+            loseScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
             
             if (timer) {
                 clearInterval(timer);
