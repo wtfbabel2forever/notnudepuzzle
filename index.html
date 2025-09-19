@@ -224,7 +224,7 @@
         let timeLeft = 60;
         let timer;
         let selectedPieceElement = null;
-        let swapCount = 0;
+        let pieces = [];
         let currentImageIndex = 1;
 
         // DOM elements
@@ -266,22 +266,24 @@
         // Create puzzle pieces
         function createPuzzlePieces() {
             puzzleGrid.innerHTML = '';
+            pieces = [];
             
+            // Create 16 pieces in order
             for (let i = 0; i < 16; i++) {
                 const piece = document.createElement('div');
                 piece.className = 'puzzle-piece';
                 piece.dataset.index = i;
+                piece.dataset.correctIndex = i; // Store correct position
+                piece.dataset.currentPosition = i; // Current position
                 
                 // Calculate position for background image
                 const row = Math.floor(i / 4);
                 const col = i % 4;
                 
-                // Set background image with fallback
+                // Set background image
                 piece.style.backgroundImage = `url(photo${currentImageIndex}.png)`;
                 piece.style.backgroundSize = '400% 400%';
                 piece.style.backgroundPosition = `${col * 33.33}% ${row * 33.33}%`;
-                
-                // Add fallback background color in case image doesn't load
                 piece.style.backgroundColor = '#ddd';
                 
                 // Add click handler
@@ -294,6 +296,72 @@
                 piece.setAttribute('onerror', 'this.style.backgroundImage="none"; this.style.backgroundColor="#ddd";');
                 
                 puzzleGrid.appendChild(piece);
+                pieces.push(piece);
+            }
+            
+            // Shuffle pieces after creating them
+            shufflePieces();
+        }
+        
+        // Shuffle pieces function
+        function shufflePieces() {
+            // Simple shuffle - swap random pieces 50 times
+            for (let i = 0; i < 50; i++) {
+                const index1 = Math.floor(Math.random() * 16);
+                let index2;
+                do {
+                    index2 = Math.floor(Math.random() * 16);
+                } while (index2 === index1);
+                
+                swapTwoPieces(index1, index2);
+            }
+            
+            // Update visual positions
+            updatePiecePositions();
+        }
+        
+        // Swap two pieces by index
+        function swapTwoPieces(index1, index2) {
+            if (index1 < 0 || index1 >= 16 || index2 < 0 || index2 >= 16) return;
+            
+            // Get pieces
+            const piece1 = pieces[index1];
+            const piece2 = pieces[index2];
+            
+            // Swap their position data
+            const tempPos = piece1.dataset.currentPosition;
+            piece1.dataset.currentPosition = piece2.dataset.currentPosition;
+            piece2.dataset.currentPosition = tempPos;
+        }
+        
+        // Update visual positions of all pieces
+        function updatePiecePositions() {
+            // Clear grid
+            puzzleGrid.innerHTML = '';
+            
+            // Add pieces back in their current positions
+            for (let i = 0; i < 16; i++) {
+                // Find piece that should be at position i
+                let pieceAtPosition = null;
+                for (let j = 0; j < 16; j++) {
+                    if (pieces[j].dataset.currentPosition == i) {
+                        pieceAtPosition = pieces[j];
+                        break;
+                    }
+                }
+                
+                if (pieceAtPosition) {
+                    // Calculate background position based on CORRECT position (not current)
+                    const correctIndex = parseInt(pieceAtPosition.dataset.correctIndex);
+                    const row = Math.floor(correctIndex / 4);
+                    const col = correctIndex % 4;
+                    
+                    pieceAtPosition.style.backgroundImage = `url(photo${currentImageIndex}.png)`;
+                    pieceAtPosition.style.backgroundSize = '400% 400%';
+                    pieceAtPosition.style.backgroundPosition = `${col * 33.33}% ${row * 33.33}%`;
+                    
+                    puzzleGrid.appendChild(pieceAtPosition);
+                }
             }
         }
 
@@ -318,52 +386,55 @@
             element.classList.add('selected');
             selectedPieceElement = element;
             swapButton.disabled = false;
-            
-            // DEBUG: Add visual confirmation that piece is selected
-            console.log('Piece selected:', element.dataset.index);
         }
 
-        // Swap pieces function - ONLY THIS FUNCTION HAS BEEN MODIFIED FOR BETTER RELIABILITY
+        // Swap pieces function - COMPLETELY REWRITTEN FOR 16-PIECE FUNCTIONALITY
         function swapPieces() {
-            // Simple check - if we have a selected piece, proceed
-            if (!selectedPieceElement) {
-                console.log('No piece selected');
-                return;
-            }
+            if (!selectedPieceElement || gameState !== 'playing') return;
             
-            if (gameState !== 'playing') {
-                console.log('Game not in playing state');
-                return;
-            }
+            // Get index of selected piece
+            const selectedIndex = parseInt(selectedPieceElement.dataset.index);
+            const selectedCurrentPos = parseInt(selectedPieceElement.dataset.currentPosition);
             
-            console.log('Swap button clicked successfully!');
+            // Find a random other piece to swap with
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * 16);
+            } while (randomIndex === selectedIndex);
             
-            // Simple visual feedback
-            selectedPieceElement.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                if (selectedPieceElement) {
-                    selectedPieceElement.style.transform = 'scale(1.05)';
+            const randomPiece = pieces[randomIndex];
+            const randomCurrentPos = parseInt(randomPiece.dataset.currentPosition);
+            
+            // Swap the two pieces
+            selectedPieceElement.dataset.currentPosition = randomCurrentPos;
+            randomPiece.dataset.currentPosition = selectedCurrentPos;
+            
+            // Update visual display
+            updatePiecePositions();
+            
+            // Reset selection
+            selectedPieceElement = null;
+            swapButton.disabled = true;
+            
+            // Check if puzzle is solved
+            checkIfSolved();
+        }
+        
+        // Check if puzzle is solved
+        function checkIfSolved() {
+            let solved = true;
+            for (let i = 0; i < 16; i++) {
+                const piece = pieces[i];
+                if (parseInt(piece.dataset.currentPosition) !== parseInt(piece.dataset.correctIndex)) {
+                    solved = false;
+                    break;
                 }
-            }, 200);
+            }
             
-            // Increment swap counter
-            swapCount++;
-            console.log('Swap count:', swapCount);
-            
-            // Win after 3 successful swaps
-            if (swapCount >= 3) {
-                console.log('Game won!');
+            if (solved) {
                 clearInterval(timer);
                 showWinScreen();
-                return;
             }
-            
-            // Show success message
-            alert('Piece swapped! ' + (3 - swapCount) + ' more swaps to win!');
-            
-            // Reset for next selection
-            swapButton.disabled = true;
-            selectedPieceElement = null;
         }
 
         // Show win screen
@@ -383,7 +454,6 @@
         // Reset game
         function resetGame() {
             gameState = 'start';
-            swapCount = 0;
             selectedPieceElement = null;
             
             winScreen.classList.add('hidden');
