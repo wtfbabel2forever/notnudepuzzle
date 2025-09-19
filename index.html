@@ -1,181 +1,440 @@
-<script>
-  // ------- State -------
-  let gameState = 'start';
-  let timeLeft = 60;
-  let timer;
-  let selectedSlot = -1;        // ★ 선택은 "슬롯 인덱스" 기준으로 관리
-  let pieces = [];              // 생성 순서 배열 (DOM 참조 저장)
-  let currentImageIndex = 1;
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pariway Puzzle Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e, #fecfef, #a18cd1);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Background with fallback */
+        .background-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            z-index: 0;
+        }
+        
+        #background-image {
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+        
+        /* Fallback background if image fails to load */
+        .fallback-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #f8971d, #f54e80);
+            opacity: 0.3;
+            z-index: 0;
+            border-radius: 20px;
+        }
+        
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            color: #d63384;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        
+        .safety-badge {
+            background: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 15px 0;
+            display: inline-block;
+        }
+        
+        .emoji {
+            font-size: 40px;
+            margin: 20px 0;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        button {
+            background: #d63384;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 15px 5px;
+            box-shadow: 0 3px 10px rgba(214, 51, 132, 0.3);
+            width: 80%;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            background: #e63946;
+            transform: translateY(-2px);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .powered-by {
+            background: #f8971d;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 12px;
+            margin: 30px auto 10px;
+            display: inline-block;
+        }
+        
+        .puzzle-grid {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            min-height: 200px;
+        }
+        
+        .puzzle-piece {
+            background: #ddd;
+            height: 60px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px 0;
+            transition: all 0.1s ease;
+        }
+        
+        .puzzle-piece.selected {
+            background: #d63384;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(214, 51, 132, 0.5);
+        }
+        
+        /* Position SWAP button closer to powered-by and expand puzzle grid vertically */
+        #swap-button {
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Background image with fallback -->
+        <div class="background-container">
+            <img id="background-image" src="logo.png" alt="Background" onerror="this.style.display='none'">
+            <div class="fallback-background"></div>
+        </div>
+        
+        <div class="content">
+            <!-- Start Screen -->
+            <div id="start-screen">
+                <div class="safety-badge">
+                    ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+                </div>
+                <div class="emoji">🧩</div>
+                <h1>Pariway Puzzle Game</h1>
+                <p class="subtitle">FIX IT!<br>60 SECONDS!</p>
+                <button onclick="startGame()">✨ START GAME! ✨</button>
+            </div>
 
-  // ------- DOM -------
-  const startScreen  = document.getElementById('start-screen');
-  const gameScreen   = document.getElementById('game-screen');
-  const winScreen    = document.getElementById('win-screen');
-  const loseScreen   = document.getElementById('lose-screen');
-  const timeDisplay  = document.getElementById('time-display');
-  const swapButton   = document.getElementById('swap-button');
-  const puzzleContainer = document.getElementById('puzzle-container');
+            <!-- Game Screen -->
+            <div id="game-screen" class="hidden">
+                <div class="safety-badge">
+                    ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+                </div>
+                <div style="font-size: 30px; font-weight: bold; color: #e63946; margin: 20px 0;">
+                    ⏱️ <span id="time-display">1:00</span>
+                </div>
+                <div class="puzzle-grid" id="puzzle-grid">
+                    <div id="puzzle-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 15px;">
+                        <!-- Puzzle pieces will be generated by JavaScript -->
+                    </div>
+                </div>
+                <!-- SWAP button positioned closer to powered-by -->
+                <button id="swap-button" onclick="swapPieces()" disabled>🔄 SWAP</button>
+            </div>
 
-  // ------- Helpers -------
-  // 현재 "슬롯 인덱스(slot)"에 들어있는 실제 조각 DOM을 찾아줌
-  function getPieceBySlot(slot){
-    return pieces.find(p => parseInt(p.dataset.index,10) === slot);
-  }
-  // 모든 조각의 선택 표시 해제
-  function clearSelections(){
-    pieces.forEach(el => el.classList.remove('selected'));
-  }
-  // 타이머 UI
-  function updateTimeDisplay(){
-    const m = Math.floor(timeLeft / 60);
-    const s = timeLeft % 60;
-    timeDisplay.textContent = `${m}:${s < 10 ? '0'+s : s}`;
-  }
-  // DOM 재배치: 0~7 슬롯 순서대로 화면에 붙이기
-  function reorderPieces(){
-    puzzleContainer.innerHTML = '';
-    for(let slot=0; slot<8; slot++){
-      const el = getPieceBySlot(slot);
-      if(el) puzzleContainer.appendChild(el);
-    }
-  }
-  // 섞기: 슬롯 번호(dataset.index)를 서로 스왑
-  function shufflePieces(){
-    // 충분히 섞되, 완성 상태는 피하기
-    do{
-      for(let i=0;i<24;i++){
-        const a = (Math.random()*8)|0;
-        let b;
-        do{ b = (Math.random()*8)|0; } while(b===a);
-        const A = getPieceBySlot(a);
-        const B = getPieceBySlot(b);
-        const tmp = A.dataset.index;
-        A.dataset.index = B.dataset.index;
-        B.dataset.index = tmp;
-      }
-    } while (isSolved());
-    reorderPieces();
-  }
-  // 퍼즐 완성 체크
-  function isSolved(){
-    // 각 "조각"이 자신의 정답 위치(correctPosition) 슬롯에 있는가?
-    return pieces.every(el =>
-      parseInt(el.dataset.index,10) === parseInt(el.dataset.correctPosition,10)
-    );
-  }
+            <!-- Win Screen -->
+            <div id="win-screen" class="hidden">
+                <div class="safety-badge">
+                    ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+                </div>
+                <div class="emoji">🎉</div>
+                <h1 style="color: #2a9d8f; font-size: 22px; font-weight: bold; margin: 20px 0;">YOU WIN!</h1>
+                <p class="subtitle">STYLE MASTER! 🏆</p>
+                <button onclick="resetGame()">🌟 PLAY AGAIN</button>
+            </div>
 
-  // ------- Game Flow -------
-  function startGame(){
-    gameState = 'playing';
-    startScreen.classList.add('hidden');
-    gameScreen.classList.remove('hidden');
+            <!-- Lose Screen -->
+            <div id="lose-screen" class="hidden">
+                <div class="safety-badge">
+                    ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+                </div>
+                <div class="emoji">⏰</div>
+                <h1 style="color: #e63946; font-size: 22px; font-weight: bold; margin: 20px 0;">TIME'S UP!</h1>
+                <p class="subtitle">TRY AGAIN! 💪</p>
+                <button onclick="resetGame()">🔥 TRY AGAIN</button>
+            </div>
 
-    // 1~10 중 랜덤 이미지 사용 (photo1.png ~ photo10.png가 있어야 함)
-    currentImageIndex = Math.floor(Math.random()*10) + 1;
+            <div class="powered-by">Powered by AI Blonde Studio</div>
+        </div>
+    </div>
 
-    createPuzzlePieces(); // 2x4 = 8조각
-    timeLeft = 60;
-    updateTimeDisplay();
+    <script>
+        // Simple global variables
+        let gameState = 'start';
+        let timeLeft = 60;
+        let timer;
+        let selectedPieceIndex = -1;
+        let pieces = [];
+        let currentImageIndex = 1;
 
-    timer = setInterval(()=>{
-      if(--timeLeft <= 0){
-        clearInterval(timer);
-        showLoseScreen();
-      }
-      updateTimeDisplay();
-    }, 1000);
-  }
+        // DOM elements
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const winScreen = document.getElementById('win-screen');
+        const loseScreen = document.getElementById('lose-screen');
+        const timeDisplay = document.getElementById('time-display');
+        const swapButton = document.getElementById('swap-button');
+        const puzzleContainer = document.getElementById('puzzle-container');
 
-  function createPuzzlePieces(){
-    puzzleContainer.innerHTML = '';
-    puzzleContainer.style.gridTemplateColumns = 'repeat(4, 1fr)';
-    pieces = [];
-    selectedSlot = -1;
-    swapButton.disabled = true;
+        // Start game function
+        function startGame() {
+            gameState = 'playing';
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            // Generate random image index (1-10)
+            currentImageIndex = Math.floor(Math.random() * 10) + 1;
+            
+            // Create puzzle pieces (8 pieces instead of 16)
+            createPuzzlePieces();
+            
+            timeLeft = 60;
+            updateTimeDisplay();
+            
+            // Start timer
+            timer = setInterval(function() {
+                timeLeft--;
+                updateTimeDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    showLoseScreen();
+                }
+            }, 1000);
+        }
 
-    for(let i=0; i<8; i++){
-      const el = document.createElement('div');
-      el.className = 'puzzle-piece';
-      el.dataset.correctPosition = i; // 이 조각의 정답 슬롯
-      el.dataset.index = i;           // 현재 들어가 있는 슬롯(초기엔 동일)
+        // Create puzzle pieces (8 pieces in 2x4 grid)
+        function createPuzzlePieces() {
+            puzzleContainer.innerHTML = '';
+            puzzleContainer.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            pieces = [];
+            
+            // Create 8 pieces (instead of 16)
+            for (let i = 0; i < 8; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                piece.dataset.index = i;
+                piece.dataset.correctPosition = i;
+                
+                // Calculate position for background image (for 2x4 grid)
+                const row = Math.floor(i / 4); // 0 or 1
+                const col = i % 4; // 0, 1, 2, or 3
+                
+                // Set background image
+                piece.style.backgroundImage = `url(photo${currentImageIndex}.png)`;
+                piece.style.backgroundSize = '400% 200%';
+                piece.style.backgroundPosition = `${col * 33.33}% ${row * 100}%`;
+                piece.style.backgroundColor = '#ddd';
+                
+                // Add click handler
+                piece.onclick = function() {
+                    selectPiece(parseInt(this.dataset.index));
+                };
+                
+                puzzleContainer.appendChild(piece);
+                pieces.push(piece);
+            }
+            
+            // Shuffle pieces
+            shufflePieces();
+        }
+        
+        // Shuffle pieces
+        function shufflePieces() {
+            for (let i = 0; i < 20; i++) {
+                const index1 = Math.floor(Math.random() * 8);
+                let index2;
+                do {
+                    index2 = Math.floor(Math.random() * 8);
+                } while (index2 === index1);
+                
+                // Swap their index values
+                const tempIndex = pieces[index1].dataset.index;
+                pieces[index1].dataset.index = pieces[index2].dataset.index;
+                pieces[index2].dataset.index = tempIndex;
+            }
+            
+            // Reorder display
+            reorderPieces();
+        }
+        
+        // Reorder pieces in display
+        function reorderPieces() {
+            // Clear container
+            puzzleContainer.innerHTML = '';
+            
+            // Add pieces in their current order
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    if (parseInt(pieces[j].dataset.index) === i) {
+                        puzzleContainer.appendChild(pieces[j]);
+                        break;
+                    }
+                }
+            }
+        }
 
-      // 2행×4열 배경 자르기
-      const row = Math.floor(i / 4);   // 0 or 1
-      const col = i % 4;               // 0~3
-      el.style.backgroundImage = `url(photo${currentImageIndex}.png)`;
-      el.style.backgroundSize = '400% 200%';                  // 4열 × 2행
-      el.style.backgroundPosition = `${col*33.33}% ${row*100}%`;
+        // Update timer display
+        function updateTimeDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timeDisplay.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        }
 
-      // 클릭 시: 슬롯 인덱스 기반으로 선택
-      el.addEventListener('click', () => {
-        if(gameState !== 'playing') return;
-        clearSelections();
-        el.classList.add('selected');
-        selectedSlot = parseInt(el.dataset.index, 10);
-        swapButton.disabled = false;
-      }, {passive:true});
+        // Select piece function
+        function selectPiece(index) {
+            if (gameState !== 'playing') return;
+            
+            // Reset all pieces
+            for (let i = 0; i < pieces.length; i++) {
+                pieces[i].classList.remove('selected');
+            }
+            
+            // Highlight selected piece
+            pieces[index].classList.add('selected');
+            selectedPieceIndex = index;
+            swapButton.disabled = false;
+        }
 
-      pieces.push(el);
-    }
-    // 섞고 그 순서대로 DOM 구성
-    shufflePieces();
-  }
+        // Swap pieces function - Simplified for 8 pieces with faster movement
+        function swapPieces() {
+            if (selectedPieceIndex === -1 || gameState !== 'playing') return;
+            
+            // Find a random piece to swap with (not the selected one)
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * 8);
+            } while (randomIndex === selectedPieceIndex);
+            
+            // Get the two pieces
+            const selectedPiece = pieces[selectedPieceIndex];
+            const randomPiece = pieces[randomIndex];
+            
+            // Swap their index values
+            const tempIndex = selectedPiece.dataset.index;
+            selectedPiece.dataset.index = randomPiece.dataset.index;
+            randomPiece.dataset.index = tempIndex;
+            
+            // Update the display immediately
+            reorderPieces();
+            
+            // Reset selection
+            selectedPieceIndex = -1;
+            swapButton.disabled = true;
+            
+            // Check if puzzle is solved
+            checkIfSolved();
+        }
+        
+        // Check if puzzle is solved
+        function checkIfSolved() {
+            let solved = true;
+            for (let i = 0; i < 8; i++) {
+                if (parseInt(pieces[i].dataset.index) !== parseInt(pieces[i].dataset.correctPosition)) {
+                    solved = false;
+                    break;
+                }
+            }
+            
+            if (solved) {
+                clearInterval(timer);
+                showWinScreen();
+            }
+        }
 
-  function swapPieces(){
-    if(gameState !== 'playing' || selectedSlot === -1) return;
+        // Show win screen
+        function showWinScreen() {
+            gameState = 'won';
+            gameScreen.classList.add('hidden');
+            winScreen.classList.remove('hidden');
+        }
 
-    // 선택된 슬롯과 "다른 랜덤 슬롯" 교환 (요청 UX 유지)
-    let randomSlot;
-    do { randomSlot = (Math.random()*8)|0; } while(randomSlot === selectedSlot);
+        // Show lose screen
+        function showLoseScreen() {
+            gameState = 'lost';
+            gameScreen.classList.add('hidden');
+            loseScreen.classList.remove('hidden');
+        }
 
-    const A = getPieceBySlot(selectedSlot);
-    const B = getPieceBySlot(randomSlot);
-
-    // 슬롯 번호 교환
-    const tmp = A.dataset.index;
-    A.dataset.index = B.dataset.index;
-    B.dataset.index = tmp;
-
-    // 화면 갱신
-    clearSelections();
-    reorderPieces();
-
-    // 상태 리셋
-    selectedSlot = -1;
-    swapButton.disabled = true;
-
-    // 완성 검사
-    if(isSolved()){
-      clearInterval(timer);
-      showWinScreen();
-    }
-  }
-
-  function showWinScreen(){
-    gameState = 'won';
-    gameScreen.classList.add('hidden');
-    winScreen.classList.remove('hidden');
-  }
-
-  function showLoseScreen(){
-    gameState = 'lost';
-    gameScreen.classList.add('hidden');
-    loseScreen.classList.remove('hidden');
-  }
-
-  function resetGame(){
-    gameState = 'start';
-    selectedSlot = -1;
-
-    winScreen.classList.add('hidden');
-    loseScreen.classList.add('hidden');
-    startScreen.classList.remove('hidden');
-
-    if(timer) clearInterval(timer);
-  }
-
-  // ------- expose to buttons -------
-  window.startGame = startGame;
-  window.swapPieces = swapPieces;
-  window.resetGame = resetGame;
-</script>
+        // Reset game
+        function resetGame() {
+            gameState = 'start';
+            selectedPieceIndex = -1;
+            
+            winScreen.classList.add('hidden');
+            loseScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            
+            if (timer) {
+                clearInterval(timer);
+            }
+        }
+    </script>
+</body>
+</html>
