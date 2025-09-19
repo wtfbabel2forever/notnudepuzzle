@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,73 +17,81 @@
         }
         
         .game-container {
-            background: white;
-            border-radius: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            padding: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
             width: 100%;
-            max-width: 450px;
+            max-width: 400px;
             text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             position: relative;
+            overflow: hidden;
         }
         
-        .background-image {
+        /* Fallback background if logo.png doesn't load */
+        .game-container::before {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('logo.png');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.8;
-            border-radius: 30px;
-            z-index: -1;
+            background: linear-gradient(45deg, #f8971d, #f54e80);
+            opacity: 0.2;
+            z-index: 0;
+            border-radius: 20px;
+        }
+        
+        .content {
+            position: relative;
+            z-index: 1;
         }
         
         h1 {
             color: #d63384;
-            font-size: 28px;
+            font-size: 24px;
             margin: 20px 0;
         }
         
         .safety-badge {
             background: #28a745;
             color: white;
-            padding: 10px 15px;
-            border-radius: 25px;
+            padding: 10px;
+            border-radius: 20px;
             font-weight: bold;
-            margin: 20px 0;
+            margin: 15px 0;
             display: inline-block;
         }
         
         .emoji {
-            font-size: 50px;
+            font-size: 40px;
             margin: 20px 0;
         }
         
         .subtitle {
-            font-size: 20px;
-            margin: 20px 0;
+            font-size: 18px;
+            margin: 15px 0;
             font-weight: bold;
         }
         
         button {
-            background: linear-gradient(45deg, #d63384, #9b2226);
+            background: #d63384;
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 15px 25px;
+            font-size: 16px;
             font-weight: bold;
-            border-radius: 50px;
+            border-radius: 30px;
             cursor: pointer;
             margin: 15px 5px;
-            box-shadow: 0 4px 15px rgba(214, 51, 132, 0.3);
+            box-shadow: 0 3px 10px rgba(214, 51, 132, 0.3);
+            width: 80%;
+            margin-top: 20px;
         }
         
         button:hover {
+            background: #e63946;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(214, 51, 132, 0.4);
         }
         
         .hidden {
@@ -91,12 +99,12 @@
         }
         
         .powered-by {
-            background: linear-gradient(45deg, #f8971d, #f54e80);
+            background: #f8971d;
             color: white;
             padding: 8px 15px;
-            border-radius: 20px;
+            border-radius: 15px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 12px;
             margin: 30px auto 10px;
             display: inline-block;
         }
@@ -104,169 +112,184 @@
 </head>
 <body>
     <div class="game-container">
-        <div class="background-image"></div>
-        
-        <!-- Start Screen -->
-        <div id="start-screen">
-            <div class="safety-badge">
-                ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+        <div class="content">
+            <!-- Start Screen -->
+            <div id="start-screen">
+                <div class="safety-badge">
+                    ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+                </div>
+                <div class="emoji">🧩</div>
+                <h1>Pariway Puzzle Game</h1>
+                <p class="subtitle">FIX IT!<br>60 SECONDS!</p>
+                <button onclick="startGame()">✨ START GAME! ✨</button>
             </div>
-            <div class="emoji">🧩</div>
-            <h1>Pariway Puzzle Game</h1>
-            <p class="subtitle">FIX IT!<br>60 SECONDS!</p>
-            <button id="start-button">✨ START GAME! ✨</button>
-        </div>
 
-        <!-- Game Screen -->
-        <div id="game-screen" class="hidden">
-            <div class="safety-badge">
-                ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+            <!-- Game Screen -->
+            <div id="game-screen" class="hidden">
+                <div class="safety-badge">
+                    ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+                </div>
+                <div style="font-size: 30px; font-weight: bold; color: #e63946; margin: 20px 0;">
+                    ⏱️ <span id="time-display">1:00</span>
+                </div>
+                <div style="background: #f0f0f0; padding: 15px; border-radius: 10px; margin: 20px 0; min-height: 150px;">
+                    <p>Click any square, then click SWAP PIECES</p>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px;">
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">1</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">2</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">3</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">4</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">5</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">6</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">7</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">8</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">9</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">10</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">11</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">12</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">13</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">14</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">15</div>
+                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">16</div>
+                    </div>
+                </div>
+                <button id="swap-button" onclick="swapPieces()" disabled>🔄 SWAP PIECES</button>
             </div>
-            <div style="font-size: 40px; font-weight: bold; color: #e63946; margin: 20px 0;">
-                ⏱️ <span id="time-display">1:00</span>
-            </div>
-            <div id="puzzle-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; background: #f0f0f0; padding: 10px; border-radius: 15px; margin: 20px 0; height: 200px;">
-                <!-- Puzzle pieces will be generated here -->
-            </div>
-            <button id="swap-button" disabled>🔄 SWAP PIECES</button>
-        </div>
 
-        <!-- Win Screen -->
-        <div id="win-screen" class="hidden">
-            <div class="safety-badge">
-                ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+            <!-- Win Screen -->
+            <div id="win-screen" class="hidden">
+                <div class="safety-badge">
+                    ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+                </div>
+                <div class="emoji">🎉</div>
+                <h1 style="color: #2a9d8f; font-size: 22px; font-weight: bold; margin: 20px 0;">YOU WIN!</h1>
+                <p class="subtitle">STYLE MASTER! 🏆</p>
+                <button onclick="resetGame()">🌟 PLAY AGAIN</button>
             </div>
-            <div class="emoji">🎉</div>
-            <h1 style="color: #2a9d8f; font-size: 26px; font-weight: bold; margin: 20px 0;">YOU WIN!</h1>
-            <p class="subtitle">STYLE MASTER! 🏆</p>
-            <button id="play-again-button">🌟 PLAY AGAIN</button>
-        </div>
 
-        <!-- Lose Screen -->
-        <div id="lose-screen" class="hidden">
-            <div class="safety-badge">
-                ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+            <!-- Lose Screen -->
+            <div id="lose-screen" class="hidden">
+                <div class="safety-badge">
+                    ✅ NO INSTALL • NO SERVER • 200% SAFE • WORKS ON MOBILE
+                </div>
+                <div class="emoji">⏰</div>
+                <h1 style="color: #e63946; font-size: 22px; font-weight: bold; margin: 20px 0;">TIME'S UP!</h1>
+                <p class="subtitle">TRY AGAIN! 💪</p>
+                <button onclick="resetGame()">🔥 TRY AGAIN</button>
             </div>
-            <div class="emoji">⏰</div>
-            <h1 style="color: #e63946; font-size: 26px; font-weight: bold; margin: 20px 0;">TIME'S UP!</h1>
-            <p class="subtitle">TRY AGAIN! 💪</p>
-            <button id="try-again-button">🔥 TRY AGAIN</button>
-        </div>
 
-        <div class="powered-by">Powered by AI Blonde Studio</div>
+            <div class="powered-by">Powered by AI Blonde Studio</div>
+        </div>
     </div>
 
     <script>
-        // Simple game logic that should work anywhere
-        document.addEventListener('DOMContentLoaded', function() {
-            // Elements
-            const startScreen = document.getElementById('start-screen');
-            const gameScreen = document.getElementById('game-screen');
-            const winScreen = document.getElementById('win-screen');
-            const loseScreen = document.getElementById('lose-screen');
-            const startButton = document.getElementById('start-button');
-            const swapButton = document.getElementById('swap-button');
-            const playAgainButton = document.getElementById('play-again-button');
-            const tryAgainButton = document.getElementById('try-again-button');
-            const timeDisplay = document.getElementById('time-display');
-            const puzzleGrid = document.getElementById('puzzle-grid');
+        // Simple global variables
+        let gameState = 'start';
+        let timeLeft = 60;
+        let timer;
+        let selectedPieceElement = null;
+        let swapCount = 0;
+
+        // DOM elements
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const winScreen = document.getElementById('win-screen');
+        const loseScreen = document.getElementById('lose-screen');
+        const timeDisplay = document.getElementById('time-display');
+        const swapButton = document.getElementById('swap-button');
+
+        // Start game function
+        function startGame() {
+            gameState = 'playing';
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
             
-            let timeLeft = 60;
-            let timer;
-            let gameState = 'start';
+            timeLeft = 60;
+            updateTimeDisplay();
             
-            // Create simple puzzle pieces
-            function createPuzzle() {
-                puzzleGrid.innerHTML = '';
-                for (let i = 0; i < 16; i++) {
-                    const piece = document.createElement('div');
-                    piece.style.backgroundColor = '#ddd';
-                    piece.style.borderRadius = '5px';
-                    piece.style.cursor = 'pointer';
-                    piece.textContent = i + 1;
-                    piece.style.display = 'flex';
-                    piece.style.alignItems = 'center';
-                    piece.style.justifyContent = 'center';
-                    piece.style.fontWeight = 'bold';
-                    piece.style.fontSize = '14px';
-                    
-                    piece.addEventListener('click', function() {
-                        if (gameState === 'playing') {
-                            this.style.backgroundColor = '#d63384';
-                            this.style.color = 'white';
-                            swapButton.disabled = false;
-                        }
-                    });
-                    
-                    puzzleGrid.appendChild(piece);
+            // Start timer
+            timer = setInterval(function() {
+                timeLeft--;
+                updateTimeDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    showLoseScreen();
                 }
-            }
+            }, 1000);
+        }
+
+        // Update timer display
+        function updateTimeDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timeDisplay.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        }
+
+        // Select piece function
+        function selectPiece(element) {
+            if (gameState !== 'playing') return;
             
-            // Start game
-            function startGame() {
-                gameState = 'playing';
-                startScreen.classList.add('hidden');
-                gameScreen.classList.remove('hidden');
-                createPuzzle();
-                
-                timeLeft = 60;
-                updateTimer();
-                
-                timer = setInterval(function() {
-                    timeLeft--;
-                    updateTimer();
-                    
-                    if (timeLeft <= 0) {
-                        clearInterval(timer);
-                        gameState = 'lost';
-                        gameScreen.classList.add('hidden');
-                        loseScreen.classList.remove('hidden');
-                    }
-                }, 1000);
-            }
-            
-            // Update timer display
-            function updateTimer() {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                timeDisplay.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-            }
-            
-            // Swap pieces (simplified)
-            function swapPieces() {
-                if (gameState !== 'playing') return;
-                
-                // Just simulate a swap
-                const pieces = puzzleGrid.querySelectorAll('div');
-                if (pieces.length > 1) {
-                    // Simple win condition after 3 swaps
-                    static swapCount = 0;
-                    swapCount++;
-                    
-                    if (swapCount >= 3) {
-                        clearInterval(timer);
-                        gameState = 'won';
-                        gameScreen.classList.add('hidden');
-                        winScreen.classList.remove('hidden');
-                        return;
-                    }
-                }
-                
-                swapButton.disabled = true;
-            }
-            
-            // Event listeners
-            startButton.addEventListener('click', startGame);
-            swapButton.addEventListener('click', swapPieces);
-            playAgainButton.addEventListener('click', function() {
-                winScreen.classList.add('hidden');
-                startScreen.classList.remove('hidden');
+            // Reset all pieces
+            const allPieces = gameScreen.querySelectorAll('div[onclick*="selectPiece"]');
+            allPieces.forEach(piece => {
+                piece.style.backgroundColor = '#ddd';
+                piece.style.color = 'black';
             });
-            tryAgainButton.addEventListener('click', function() {
-                loseScreen.classList.add('hidden');
-                startScreen.classList.remove('hidden');
-            });
-        });
+            
+            // Highlight selected piece
+            element.style.backgroundColor = '#d63384';
+            element.style.color = 'white';
+            selectedPieceElement = element;
+            swapButton.disabled = false;
+        }
+
+        // Swap pieces function
+        function swapPieces() {
+            if (!selectedPieceElement || gameState !== 'playing') return;
+            
+            swapCount++;
+            
+            // Win after 3 successful swaps
+            if (swapCount >= 3) {
+                clearInterval(timer);
+                showWinScreen();
+                return;
+            }
+            
+            // Reset for next selection
+            swapButton.disabled = true;
+            selectedPieceElement = null;
+        }
+
+        // Show win screen
+        function showWinScreen() {
+            gameState = 'won';
+            gameScreen.classList.add('hidden');
+            winScreen.classList.remove('hidden');
+        }
+
+        // Show lose screen
+        function showLoseScreen() {
+            gameState = 'lost';
+            gameScreen.classList.add('hidden');
+            loseScreen.classList.remove('hidden');
+        }
+
+        // Reset game
+        function resetGame() {
+            gameState = 'start';
+            swapCount = 0;
+            selectedPieceElement = null;
+            
+            winScreen.classList.add('hidden');
+            loseScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            
+            if (timer) {
+                clearInterval(timer);
+            }
+        }
     </script>
 </body>
 </html>
