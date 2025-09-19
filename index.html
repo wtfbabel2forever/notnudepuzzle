@@ -17,7 +17,7 @@
         }
         
         .game-container {
-            background: rgba(255, 255, 255, 0.9);
+            background: white;
             border-radius: 20px;
             padding: 30px;
             width: 100%;
@@ -28,16 +28,34 @@
             overflow: hidden;
         }
         
-        /* Fallback background if logo.png doesn't load */
-        .game-container::before {
-            content: '';
+        /* Background with fallback */
+        .background-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            z-index: 0;
+        }
+        
+        #background-image {
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+            object-fit: cover;
+            border-radius: 20px;
+        }
+        
+        /* Fallback background if image fails to load */
+        .fallback-background {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background: linear-gradient(45deg, #f8971d, #f54e80);
-            opacity: 0.2;
+            opacity: 0.3;
             z-index: 0;
             border-radius: 20px;
         }
@@ -108,10 +126,41 @@
             margin: 30px auto 10px;
             display: inline-block;
         }
+        
+        .puzzle-grid {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            min-height: 200px;
+        }
+        
+        .puzzle-piece {
+            background: #ddd;
+            height: 40px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px 0;
+            transition: all 0.2s;
+        }
+        
+        .puzzle-piece.selected {
+            background: #d63384;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
+        <!-- Background image with fallback -->
+        <div class="background-container">
+            <img id="background-image" src="logo.png" alt="Background" onerror="this.style.display='none'">
+            <div class="fallback-background"></div>
+        </div>
+        
         <div class="content">
             <!-- Start Screen -->
             <div id="start-screen">
@@ -132,25 +181,10 @@
                 <div style="font-size: 30px; font-weight: bold; color: #e63946; margin: 20px 0;">
                     ⏱️ <span id="time-display">1:00</span>
                 </div>
-                <div style="background: #f0f0f0; padding: 15px; border-radius: 10px; margin: 20px 0; min-height: 150px;">
+                <div class="puzzle-grid" id="puzzle-grid">
                     <p>Click any square, then click SWAP PIECES</p>
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px;">
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">1</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">2</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">3</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">4</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">5</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">6</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">7</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">8</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">9</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">10</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">11</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">12</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">13</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">14</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">15</div>
-                        <div onclick="selectPiece(this)" style="background: #ddd; height: 30px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;">16</div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 15px;">
+                        <!-- Puzzle pieces will be generated by JavaScript -->
                     </div>
                 </div>
                 <button id="swap-button" onclick="swapPieces()" disabled>🔄 SWAP PIECES</button>
@@ -189,6 +223,7 @@
         let timer;
         let selectedPieceElement = null;
         let swapCount = 0;
+        let currentImageIndex = 1;
 
         // DOM elements
         const startScreen = document.getElementById('start-screen');
@@ -197,12 +232,19 @@
         const loseScreen = document.getElementById('lose-screen');
         const timeDisplay = document.getElementById('time-display');
         const swapButton = document.getElementById('swap-button');
+        const puzzleGrid = document.querySelector('#puzzle-grid div[style*="grid"]');
 
         // Start game function
         function startGame() {
             gameState = 'playing';
             startScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
+            
+            // Generate random image index (1-10)
+            currentImageIndex = Math.floor(Math.random() * 10) + 1;
+            
+            // Create puzzle pieces
+            createPuzzlePieces();
             
             timeLeft = 60;
             updateTimeDisplay();
@@ -219,6 +261,40 @@
             }, 1000);
         }
 
+        // Create puzzle pieces
+        function createPuzzlePieces() {
+            puzzleGrid.innerHTML = '';
+            
+            for (let i = 0; i < 16; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'puzzle-piece';
+                piece.dataset.index = i;
+                
+                // Calculate position for background image
+                const row = Math.floor(i / 4);
+                const col = i % 4;
+                
+                // Set background image with fallback
+                piece.style.backgroundImage = `url(photo${currentImageIndex}.png)`;
+                piece.style.backgroundSize = '400% 400%';
+                piece.style.backgroundPosition = `${col * 33.33}% ${row * 33.33}%`;
+                
+                // Add fallback background color in case image doesn't load
+                piece.style.backgroundColor = '#ddd';
+                
+                // Add click handler
+                piece.addEventListener('click', function() {
+                    selectPiece(this);
+                });
+                
+                // Add error handler for image
+                piece.style.backgroundRepeat = 'no-repeat';
+                piece.setAttribute('onerror', 'this.style.backgroundImage="none"; this.style.backgroundColor="#ddd";');
+                
+                puzzleGrid.appendChild(piece);
+            }
+        }
+
         // Update timer display
         function updateTimeDisplay() {
             const minutes = Math.floor(timeLeft / 60);
@@ -231,15 +307,13 @@
             if (gameState !== 'playing') return;
             
             // Reset all pieces
-            const allPieces = gameScreen.querySelectorAll('div[onclick*="selectPiece"]');
+            const allPieces = document.querySelectorAll('.puzzle-piece');
             allPieces.forEach(piece => {
-                piece.style.backgroundColor = '#ddd';
-                piece.style.color = 'black';
+                piece.classList.remove('selected');
             });
             
             // Highlight selected piece
-            element.style.backgroundColor = '#d63384';
-            element.style.color = 'white';
+            element.classList.add('selected');
             selectedPieceElement = element;
             swapButton.disabled = false;
         }
@@ -290,6 +364,29 @@
                 clearInterval(timer);
             }
         }
+        
+        // Check if images load properly
+        window.addEventListener('load', function() {
+            // Test if logo.png loads
+            const testLogo = new Image();
+            testLogo.src = 'logo.png';
+            testLogo.onload = function() {
+                console.log('logo.png loaded successfully');
+            };
+            testLogo.onerror = function() {
+                console.log('logo.png failed to load - using fallback background');
+            };
+            
+            // Test if photo1.png loads
+            const testPhoto = new Image();
+            testPhoto.src = 'photo1.png';
+            testPhoto.onload = function() {
+                console.log('photo1.png loaded successfully');
+            };
+            testPhoto.onerror = function() {
+                console.log('photo1.png failed to load - using fallback colors');
+            };
+        });
     </script>
 </body>
 </html>
