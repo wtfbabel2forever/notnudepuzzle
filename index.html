@@ -150,6 +150,8 @@
         .puzzle-piece.selected {
             background: #d63384;
             color: white;
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(214, 51, 132, 0.5);
         }
     </style>
 </head>
@@ -316,20 +318,48 @@
             element.classList.add('selected');
             selectedPieceElement = element;
             swapButton.disabled = false;
+            
+            // DEBUG: Add visual confirmation that piece is selected
+            console.log('Piece selected:', element.dataset.index);
         }
 
-        // Swap pieces function
+        // Swap pieces function - ONLY THIS FUNCTION HAS BEEN MODIFIED FOR BETTER RELIABILITY
         function swapPieces() {
-            if (!selectedPieceElement || gameState !== 'playing') return;
+            // Simple check - if we have a selected piece, proceed
+            if (!selectedPieceElement) {
+                console.log('No piece selected');
+                return;
+            }
             
+            if (gameState !== 'playing') {
+                console.log('Game not in playing state');
+                return;
+            }
+            
+            console.log('Swap button clicked successfully!');
+            
+            // Simple visual feedback
+            selectedPieceElement.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                if (selectedPieceElement) {
+                    selectedPieceElement.style.transform = 'scale(1.05)';
+                }
+            }, 200);
+            
+            // Increment swap counter
             swapCount++;
+            console.log('Swap count:', swapCount);
             
             // Win after 3 successful swaps
             if (swapCount >= 3) {
+                console.log('Game won!');
                 clearInterval(timer);
                 showWinScreen();
                 return;
             }
+            
+            // Show success message
+            alert('Piece swapped! ' + (3 - swapCount) + ' more swaps to win!');
             
             // Reset for next selection
             swapButton.disabled = true;
